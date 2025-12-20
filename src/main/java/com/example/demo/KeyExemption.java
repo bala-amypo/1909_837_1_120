@@ -1,31 +1,31 @@
-package com.example.demo.entity;
+// package com.example.demo.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
-import java.sql.Timestamp;
+// import jakarta.persistence.*;
+// import jakarta.validation.constraints.Min;
+// import java.sql.Timestamp;
 
-@Entity
-@Table(name="key_exemption")
-public class KeyExemption {
+// @Entity
+// @Table(name="key_exemption")
+// public class KeyExemption {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+//     @Id
+//     @GeneratedValue(strategy = GenerationType.IDENTITY)
+//     private Long id;
 
-    @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="api_key_id", nullable=false)
-    private ApiKey apiKey;
+//     @ManyToOne(fetch=FetchType.LAZY)
+//     @JoinColumn(name="api_key_id", nullable=false)
+//     private ApiKey apiKey;
 
-    private String notes;
+//     private String notes;
 
-    @Column(nullable=false)
-    private Boolean unlimitedAccess = false;
+//     @Column(nullable=false)
+//     private Boolean unlimitedAccess = false;
 
-    @Min(0)
-    private Integer temporaryExtensionLimit;
+//     @Min(0)
+//     private Integer temporaryExtensionLimit;
 
-    @Column(nullable=false)
-    private Timestamp validUntil;
+//     @Column(nullable=false)
+//     private Timestamp validUntil;
 
-    // getters & setters
-}
+//     // getters & setters
+// }
