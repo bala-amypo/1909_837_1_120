@@ -1,36 +1,33 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.RateLimitEnforcementDto;
+import com.example.demo.entity.RateLimitEnforcement;
 import com.example.demo.service.RateLimitEnforcementService;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/enforcements")
-@Tag(name = "Rate Limit Enforcement", description = "Enforcement Logs")
+@Tag(name = "Rate Limit Enforcement")
 public class RateLimitEnforcementController {
+    private final RateLimitEnforcementService enforcementService;
 
-    private final RateLimitEnforcementService service;
-
-    public RateLimitEnforcementController(RateLimitEnforcementService service) {
-        this.service = service;
+    public RateLimitEnforcementController(RateLimitEnforcementService enforcementService) {
+        this.enforcementService = enforcementService;
     }
 
     @PostMapping
-    public ResponseEntity<RateLimitEnforcementDto> create(@RequestBody RateLimitEnforcementDto dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.createEnforcement(dto));
+    public RateLimitEnforcement createEnforcement(@RequestBody RateLimitEnforcement enforcement) {
+        return enforcementService.createEnforcement(enforcement);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<RateLimitEnforcementDto> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(service.getEnforcementById(id));
+    public RateLimitEnforcement getEnforcementById(@PathVariable Long id) {
+        return enforcementService.getEnforcementById(id);
     }
 
     @GetMapping("/key/{keyId}")
-    public ResponseEntity<List<RateLimitEnforcementDto>> getForKey(@PathVariable Long keyId) {
-        return ResponseEntity.ok(service.getEnforcementsForKey(keyId));
+    public List<RateLimitEnforcement> getEnforcementsForKey(@PathVariable Long keyId) {
+        return enforcementService.getEnforcementsForKey(keyId);
     }
 }
