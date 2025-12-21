@@ -4,16 +4,10 @@ import com.example.demo.dto.ApiKeyDto;
 import java.util.List;
 
 public interface ApiKeyService {
-
     ApiKeyDto createApiKey(ApiKeyDto keyDto);
-
     ApiKeyDto updateApiKey(Long id, ApiKeyDto keyDto);
-
     ApiKeyDto getApiKeyById(Long id);
-
-    ApiKeyDto getApiKeyByValue(String keyValue);
-
+    ApiKeyDto getApiKeyByValue(String value);
     List<ApiKeyDto> getAllApiKeys();
-
     void deactivateApiKey(Long id);
 }

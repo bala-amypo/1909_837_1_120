@@ -1,34 +1,36 @@
-package com.example.controller;
+package com.example.demo.controller;
 
-import com.example.entity.RateLimitEnforcement;
-import com.example.service.RateLimitEnforcementService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.demo.dto.RateLimitEnforcementDto;
+import com.example.demo.service.RateLimitEnforcementService;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/enforcements")
+@Tag(name = "Rate Limit Enforcement", description = "Enforcement Logs")
 public class RateLimitEnforcementController {
 
-    @Autowired
-    private RateLimitEnforcementService service;
+    private final RateLimitEnforcementService service;
 
-    // POST /  -> Create enforcement event
+    public RateLimitEnforcementController(RateLimitEnforcementService service) {
+        this.service = service;
+    }
+
     @PostMapping
-    public RateLimitEnforcement createEnforcement(@RequestBody RateLimitEnforcement enforcement) {
-        return service.createEnforcement(enforcement);
+    public ResponseEntity<RateLimitEnforcementDto> create(@RequestBody RateLimitEnforcementDto dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.createEnforcement(dto));
     }
 
-    // GET /{id} -> Get enforcement by ID
     @GetMapping("/{id}")
-    public RateLimitEnforcement getEnforcementById(@PathVariable Long id) {
-        return service.getEnforcementById(id);
+    public ResponseEntity<RateLimitEnforcementDto> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getEnforcementById(id));
     }
 
-    // GET /key/{keyId} -> Get enforcement events for API key
     @GetMapping("/key/{keyId}")
-    public List<RateLimitEnforcement> getEnforcementsForKey(@PathVariable Long keyId) {
-        return service.getEnforcementsForKey(keyId);
+    public ResponseEntity<List<RateLimitEnforcementDto>> getForKey(@PathVariable Long keyId) {
+        return ResponseEntity.ok(service.getEnforcementsForKey(keyId));
     }
 }
