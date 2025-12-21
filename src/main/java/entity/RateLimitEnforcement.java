@@ -1,87 +1,50 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "rate_limit_enforcement")
+@Table(name = "rate_limit_enforcements")
 public class RateLimitEnforcement {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "api_key_id", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "api_key_id")
     private ApiKey apiKey;
 
-    @NotNull
-    @Column(nullable = false)
-    private Timestamp blockedAt;
+    private LocalDateTime blockedAt;
 
-    @NotNull
-    @Min(value = 1, message = "Limit exceeded must be at least 1")
-    @Column(nullable = false)
     private Integer limitExceededBy;
 
-    @Column(columnDefinition = "TEXT")
     private String message;
-    
 
-    public RateLimitEnforcement() {
-    }
-    
+    // No-arg constructor [cite: 96]
+    public RateLimitEnforcement() {}
 
-    public RateLimitEnforcement(Long id, ApiKey apiKey, Timestamp blockedAt, Integer limitExceededBy, String message) {
-        this.id = id;
+    // Parameterized constructor [cite: 97]
+    public RateLimitEnforcement(ApiKey apiKey, LocalDateTime blockedAt, Integer limitExceededBy, String message) {
         this.apiKey = apiKey;
         this.blockedAt = blockedAt;
         this.limitExceededBy = limitExceededBy;
         this.message = message;
     }
 
+    // Getters and Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public Long getId() {
-        return id;
-    }
+    public ApiKey getApiKey() { return apiKey; }
+    public void setApiKey(ApiKey apiKey) { this.apiKey = apiKey; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public LocalDateTime getBlockedAt() { return blockedAt; }
+    public void setBlockedAt(LocalDateTime blockedAt) { this.blockedAt = blockedAt; }
 
-    public ApiKey getApiKey() {
-        return apiKey;
-    }
+    public Integer getLimitExceededBy() { return limitExceededBy; }
+    public void setLimitExceededBy(Integer limitExceededBy) { this.limitExceededBy = limitExceededBy; }
 
-    public void setApiKey(ApiKey apiKey) {
-        this.apiKey = apiKey;
-    }
-
-    public Timestamp getBlockedAt() {
-        return blockedAt;
-    }
-
-    public void setBlockedAt(Timestamp blockedAt) {
-        this.blockedAt = blockedAt;
-    }
-
-    public Integer getLimitExceededBy() {
-        return limitExceededBy;
-    }
-
-    public void setLimitExceededBy(Integer limitExceededBy) {
-        this.limitExceededBy = limitExceededBy;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    
+    public String getMessage() { return message; }
+    public void setMessage(String message) { this.message = message; }
 }

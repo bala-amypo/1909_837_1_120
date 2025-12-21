@@ -1,34 +1,33 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name="api_key", uniqueConstraints = @UniqueConstraint(columnNames="key_value"))
+@Table(name = "api_keys")
 public class ApiKey {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name="key_value", nullable=false, unique=true)
+    @Column(unique = true, nullable = false)
     private String keyValue;
 
-    @Column(nullable=false)
     private Long ownerId;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name="plan_id", nullable=false)
+    @ManyToOne
     private QuotaPlan plan;
 
-    @Column(nullable=false)
     private Boolean active = true;
 
-    @Column(nullable=false)
-    private Timestamp createdAt;
+    public ApiKey() {}
 
-    @Column(nullable=false)
-    private Timestamp updatedAt;
-
-    // getters + setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getKeyValue() { return keyValue; }
+    public void setKeyValue(String keyValue) { this.keyValue = keyValue; }
+    public Boolean getActive() { return active; }
+    public void setActive(Boolean active) { this.active = active; }
+    public QuotaPlan getPlan() { return plan; }
+    public void setPlan(QuotaPlan plan) { this.plan = plan; }
 }
