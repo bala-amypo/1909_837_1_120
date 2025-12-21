@@ -1,42 +1,44 @@
-package com.example.controller;
+package com.example.demo.controller;
 
-import com.example.entity.ApiKey;
-import com.example.service.ApiKeyService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.demo.dto.ApiKeyDto;
+import com.example.demo.service.ApiKeyService;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/api-keys")
 public class ApiKeyController {
 
-    @Autowired
-    private ApiKeyService apiKeyService;
+    private final ApiKeyService service;
+
+    public ApiKeyController(ApiKeyService service){
+        this.service = service;
+    }
 
     @PostMapping
-    public ApiKey createApiKey(@RequestBody ApiKey apiKey) {
-        return apiKeyService.createApiKey(apiKey);
+    public ResponseEntity<ApiKeyDto> create(@RequestBody ApiKeyDto dto){
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.createApiKey(dto));
     }
 
     @PutMapping("/{id}")
-    public ApiKey updateApiKey(@PathVariable Long id, @RequestBody ApiKey apiKey) {
-        return apiKeyService.updateApiKey(id, apiKey);
+    public ResponseEntity<ApiKeyDto> update(@PathVariable Long id, @RequestBody ApiKeyDto dto){
+        return ResponseEntity.ok(service.updateApiKey(id, dto));
     }
 
     @GetMapping("/{id}")
-    public ApiKey getApiKeyById(@PathVariable Long id) {
-        return apiKeyService.getApiKeyById(id);
+    public ResponseEntity<ApiKeyDto> getById(@PathVariable Long id){
+        return ResponseEntity.ok(service.getApiKeyById(id));
     }
 
     @GetMapping
-    public List<ApiKey> getAllKeys() {
-        return apiKeyService.getAllApiKeys();
+    public ResponseEntity<List<ApiKeyDto>> getAll(){
+        return ResponseEntity.ok(service.getAllApiKeys());
     }
 
     @PutMapping("/{id}/deactivate")
-    public String deactivateKey(@PathVariable Long id) {
-        apiKeyService.deactivateApiKey(id);
-        return "API Key Deactivated Successfully";
+    public ResponseEntity<Void> deactivate(@PathVariable Long id){
+        service.deactivateApiKey(id);
+        return ResponseEntity.noContent().build();
     }
 }

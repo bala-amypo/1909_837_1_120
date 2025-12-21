@@ -1,70 +1,97 @@
-package com.example.service.impl;
+package com.example.demo.service.impl;
 
-import com.example.entity.ApiKey;
-import com.example.repository.ApiKeyRepository;
-import com.example.repository.QuotaPlanRepository;
-import com.example.service.ApiKeyService;
-import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.demo.dto.ApiKeyDto;
+import com.example.demo.exception.BadRequestException;
+import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.model.ApiKey;
+import com.example.demo.model.QuotaPlan;
+import com.example.demo.repository.ApiKeyRepository;
+import com.example.demo.repository.QuotaPlanRepository;
+import com.example.demo.service.ApiKeyService;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ApiKeyServiceImpl implements ApiKeyService {
 
-    @Autowired
-    private ApiKeyRepository apiKeyRepository;
+    private final ApiKeyRepository apiKeyRepo;
+    private final QuotaPlanRepository planRepo;
+    private final ModelMapper mapper;
 
-    @Autowired
-    private QuotaPlanRepository quotaPlanRepository;
+    public ApiKeyServiceImpl(ApiKeyRepository apiKeyRepo,
+                             QuotaPlanRepository planRepo,
+                             ModelMapper mapper){
+
+        this.apiKeyRepo = apiKeyRepo;
+        this.planRepo = planRepo;
+        this.mapper = mapper;
+    }
 
     @Override
-    public ApiKey createApiKey(ApiKey key) {
-        var plan = quotaPlanRepository.findById(key.getQuotaPlan().getId())
-                .orElseThrow(() -> new EntityNotFoundException("Quota Plan Not Found"));
+    public ApiKeyDto createApiKey(ApiKeyDto dto) {
 
-        if (!plan.isActive()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Cannot assign inactive quota plan");
-        }
+        QuotaPlan plan = planRepo.findById(dto.getPlanId())
+                .orElseThrow(() -> new ResourceNotFoundException("Plan not found"));
 
+        if(!plan.getActive())
+            throw new BadRequestException("Cannot assign inactive plan");
+
+        ApiKey key = mapper.map(dto, ApiKey.class);
+        key.setPlan(plan);
         key.setActive(true);
-        return apiKeyRepository.save(key);
+        key.setCreatedAt(Timestamp.from(Instant.now()));
+        key.setUpdatedAt(Timestamp.from(Instant.now()));
+
+        ApiKey saved = apiKeyRepo.save(key);
+
+        return mapper.map(saved, ApiKeyDto.class);
     }
 
     @Override
-    public ApiKey updateApiKey(Long id, ApiKey updatedKey) {
-        ApiKey existing = getApiKeyById(id);
-        existing.setKeyValue(updatedKey.getKeyValue());
-        existing.setActive(updatedKey.isActive());
-        existing.setQuotaPlan(updatedKey.getQuotaPlan());
-        return apiKeyRepository.save(existing);
+    public ApiKeyDto updateApiKey(Long id, ApiKeyDto dto) {
+
+        ApiKey key = apiKeyRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("API key not found"));
+
+        mapper.map(dto, key);
+        key.setUpdatedAt(Timestamp.from(Instant.now()));
+
+        return mapper.map(apiKeyRepo.save(key), ApiKeyDto.class);
     }
 
     @Override
-    public ApiKey getApiKeyById(Long id) {
-        return apiKeyRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("API Key Not Found"));
+    public ApiKeyDto getApiKeyById(Long id) {
+        ApiKey key = apiKeyRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("API Key not found"));
+        return mapper.map(key, ApiKeyDto.class);
     }
 
     @Override
-    public ApiKey getApiKeyByValue(String keyValue) {
-        return apiKeyRepository.findByKeyValue(keyValue)
-                .orElseThrow(() -> new EntityNotFoundException("API Key Not Found"));
+    public ApiKeyDto getApiKeyByValue(String keyValue) {
+        ApiKey key = apiKeyRepo.findByKeyValue(keyValue)
+                .orElseThrow(() -> new ResourceNotFoundException("API Key not found"));
+        return mapper.map(key, ApiKeyDto.class);
     }
 
     @Override
-    public List<ApiKey> getAllApiKeys() {
-        return apiKeyRepository.findAll();
+    public List<ApiKeyDto> getAllApiKeys() {
+        return apiKeyRepo.findAll()
+                .stream()
+                .map(k -> mapper.map(k, ApiKeyDto.class))
+                .collect(Collectors.toList());
     }
 
     @Override
     public void deactivateApiKey(Long id) {
-        ApiKey key = getApiKeyById(id);
+        ApiKey key = apiKeyRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("API Key not found"));
+
         key.setActive(false);
-        apiKeyRepository.save(key);
+        apiKeyRepo.save(key);
     }
 }

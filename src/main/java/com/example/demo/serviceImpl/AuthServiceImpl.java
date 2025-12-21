@@ -1,55 +1,75 @@
-package com.example.service.impl;
+package com.example.demo.service.impl;
 
-import com.example.dto.AuthRequestDto;
-import com.example.dto.RegisterRequestDto;
-import com.example.dto.AuthResponseDto;
-import com.example.entity.User;
-import com.example.repository.UserRepository;
-import com.example.service.AuthService;
-import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.demo.dto.*;
+import com.example.demo.exception.BadRequestException;
+import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.model.UserAccount;
+import com.example.demo.repository.UserAccountRepository;
+import com.example.demo.security.JwtUtil;
+import com.example.demo.service.AuthService;
+import org.modelmapper.ModelMapper;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AuthServiceImpl implements AuthService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserAccountRepository userRepo;
+    private final PasswordEncoder encoder;
+    private final AuthenticationManager authManager;
+    private final JwtUtil jwtUtil;
+    private final ModelMapper mapper;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;   // make sure configured
+    public AuthServiceImpl(UserAccountRepository userRepo,
+                           PasswordEncoder encoder,
+                           AuthenticationManager authManager,
+                           JwtUtil jwtUtil,
+                           ModelMapper mapper) {
+
+        this.userRepo = userRepo;
+        this.encoder = encoder;
+        this.authManager = authManager;
+        this.jwtUtil = jwtUtil;
+        this.mapper = mapper;
+    }
 
     @Override
-    public String register(RegisterRequestDto request) {
+    public RegisterResponseDto register(RegisterRequestDto request) {
 
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("User already exists");
+        if (userRepo.findByEmail(request.getEmail()).isPresent()) {
+            throw new BadRequestException("Email already exists");
         }
 
-        User user = new User();
-        user.setName(request.getName());
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        UserAccount user = mapper.map(request, UserAccount.class);
+        user.setPassword(encoder.encode(request.getPassword()));
 
-        userRepository.save(user);
+        UserAccount saved = userRepo.save(user);
 
-        return "User Registered Successfully";
+        return mapper.map(saved, RegisterResponseDto.class);
     }
 
     @Override
     public AuthResponseDto login(AuthRequestDto request) {
 
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        authManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(), request.getPassword()
+                )
+        );
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("Invalid Credentials");
-        }
+        UserAccount user = userRepo.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        // You can replace this with JWT token generation
-        String token = "DUMMY_TOKEN";
+        String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
 
-        return new AuthResponseDto(user.getEmail(), token);
+        AuthResponseDto response = new AuthResponseDto();
+        response.setEmail(user.getEmail());
+        response.setUserId(user.getId());
+        response.setRole(user.getRole());
+        response.setToken(token);
+
+        return response;
     }
 }
