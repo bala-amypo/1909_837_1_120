@@ -1,69 +1,41 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.dto.QuotaPlanDto;
-import com.example.demo.exception.BadRequestException;
-import com.example.demo.exception.ResourceNotFoundException;
-import com.example.demo.model.QuotaPlan;
-import com.example.demo.repository.ApiKeyRepository;
+import com.example.demo.entity.QuotaPlan;
 import com.example.demo.repository.QuotaPlanRepository;
 import com.example.demo.service.QuotaPlanService;
-import org.modelmapper.ModelMapper;
+import com.example.demo.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class QuotaPlanServiceImpl implements QuotaPlanService {
+    private final QuotaPlanRepository quotaPlanRepository;
 
-    private final QuotaPlanRepository repo;
-    private final ApiKeyRepository apiKeyRepo;
-    private final ModelMapper mapper;
-
-    public QuotaPlanServiceImpl(QuotaPlanRepository repo,
-                                ApiKeyRepository apiKeyRepo,
-                                ModelMapper mapper) {
-        this.repo = repo;
-        this.apiKeyRepo = apiKeyRepo;
-        this.mapper = mapper;
+    public QuotaPlanServiceImpl(QuotaPlanRepository quotaPlanRepository) {
+        this.quotaPlanRepository = quotaPlanRepository;
     }
 
     @Override
-    public QuotaPlanDto createQuotaPlan(QuotaPlanDto dto) {
-        QuotaPlan plan = mapper.map(dto, QuotaPlan.class);
-        plan.setActive(true);
-        return mapper.map(repo.save(plan), QuotaPlanDto.class);
+    public QuotaPlan createQuotaPlan(QuotaPlan plan) {
+        return quotaPlanRepository.save(plan);
     }
 
     @Override
-    public QuotaPlanDto updateQuotaPlan(Long id, QuotaPlanDto dto) {
-        QuotaPlan plan = repo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Plan not found"));
-        plan.setDailyLimit(dto.getDailyLimit());
-        plan.setDescription(dto.getDescription());
-        return mapper.map(repo.save(plan), QuotaPlanDto.class);
-    }
-
-    @Override
-    public QuotaPlanDto getQuotaPlanById(Long id) {
-        return repo.findById(id)
-                .map(p -> mapper.map(p, QuotaPlanDto.class))
+    public QuotaPlan getQuotaPlanById(Long id) {
+        return quotaPlanRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Plan not found"));
     }
 
     @Override
-    public List<QuotaPlanDto> getAllPlans() {
-        return repo.findAll().stream().map(p -> mapper.map(p, QuotaPlanDto.class)).collect(Collectors.toList());
+    public List<QuotaPlan> getAllPlans() {
+        return quotaPlanRepository.findAll();
     }
 
+    // This fixes the "does not override abstract method deactivateQuotaPlan" error
     @Override
     public void deactivateQuotaPlan(Long id) {
-        QuotaPlan plan = repo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Plan not found"));
-
-        if (!apiKeyRepo.findByPlan_Id(id).isEmpty())
-            throw new BadRequestException("Cannot deactivate, active keys exist");
-
+        QuotaPlan plan = getQuotaPlanById(id);
         plan.setActive(false);
-        repo.save(plan);
+        quotaPlanRepository.save(plan);
     }
 }

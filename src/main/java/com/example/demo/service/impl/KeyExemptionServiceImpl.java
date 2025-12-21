@@ -1,47 +1,45 @@
-package com.example.service.impl;
+package com.example.demo.service.impl;
 
-import com.example.entity.KeyExemption;
-import com.example.repository.KeyExemptionRepository;
-import com.example.service.KeyExemptionService;
-import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.demo.entity.KeyExemption;
+import com.example.demo.repository.ApiKeyRepository;
+import com.example.demo.repository.KeyExemptionRepository;
+import com.example.demo.service.KeyExemptionService;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class KeyExemptionServiceImpl implements KeyExemptionService {
+    private final KeyExemptionRepository exemptionRepository;
+    private final ApiKeyRepository apiKeyRepository;
 
-    @Autowired
-    private KeyExemptionRepository repository;
+    public KeyExemptionServiceImpl(KeyExemptionRepository exemptionRepository, ApiKeyRepository apiKeyRepository) {
+        this.exemptionRepository = exemptionRepository;
+        this.apiKeyRepository = apiKeyRepository;
+    }
 
     @Override
     public KeyExemption createExemption(KeyExemption exemption) {
-        exemption.setActive(true);
-        return repository.save(exemption);
+        return exemptionRepository.save(exemption);
     }
 
     @Override
-    public KeyExemption updateExemption(Long id, KeyExemption updated) {
-
-        KeyExemption existing = repository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Exemption Not Found"));
-
-        existing.setReason(updated.getReason());
-        existing.setActive(updated.isActive());
-        existing.setExpiryDate(updated.getExpiryDate());
-
-        return repository.save(existing);
+    public KeyExemption updateExemption(Long id, KeyExemption exemption) {
+        return exemptionRepository.save(exemption);
     }
 
     @Override
-    public KeyExemption getExemptionByKey(Long apiKeyId) {
-        return repository.findByApiKeyId(apiKeyId)
-                .orElseThrow(() -> new EntityNotFoundException("Exemption Not Found for Key"));
+    public Optional<KeyExemption> getExemptionByKey(Long apiKeyId) {
+        return exemptionRepository.findByApiKey_Id(apiKeyId);
     }
 
     @Override
     public List<KeyExemption> getAllExemptions() {
-        return repository.findAll();
+        return exemptionRepository.findAll();
+    }
+
+    @Override
+    public void deleteExemption(Long id) {
+        exemptionRepository.deleteById(id);
     }
 }
