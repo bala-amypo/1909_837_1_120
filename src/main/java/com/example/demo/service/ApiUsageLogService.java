@@ -1,15 +1,15 @@
-package com.example.service;
+package com.example.demo.service;
 
-import com.example.entity.ApiUsageLog;
+import com.example.demo.dto.ApiUsageLogDto;
 import java.util.List;
 
 public interface ApiUsageLogService {
 
-    ApiUsageLog logUsage(ApiUsageLog log);
+    ApiUsageLogDto logUsage(ApiUsageLogDto logDto);
 
-    List<ApiUsageLog> getUsageForApiKey(Long keyId);
+    List<ApiUsageLogDto> getUsageForApiKey(Long keyId);
 
-    List<ApiUsageLog> getUsageForToday(Long keyId);
+    List<ApiUsageLogDto> getUsageForToday(Long keyId);
 
     Long countRequestsToday(Long keyId);
 }

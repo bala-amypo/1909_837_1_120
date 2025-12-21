@@ -1,8 +1,9 @@
-package com.example.controller;
+package com.example.demo.controller;
 
-import com.example.entity.ApiUsageLog;
-import com.example.service.ApiUsageLogService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.demo.dto.ApiUsageLogDto;
+import com.example.demo.dto.CountResponseDto;
+import com.example.demo.service.ApiUsageLogService;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,26 +12,30 @@ import java.util.List;
 @RequestMapping("/api/usage-logs")
 public class ApiUsageLogController {
 
-    @Autowired
-    private ApiUsageLogService apiUsageLogService;
+    private final ApiUsageLogService service;
+
+    public ApiUsageLogController(ApiUsageLogService service) {
+        this.service = service;
+    }
 
     @PostMapping
-    public ApiUsageLog logUsage(@RequestBody ApiUsageLog log) {
-        return apiUsageLogService.logUsage(log);
+    public ResponseEntity<ApiUsageLogDto> log(@RequestBody ApiUsageLogDto dto) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(service.logUsage(dto));
     }
 
     @GetMapping("/key/{keyId}")
-    public List<ApiUsageLog> getUsageForKey(@PathVariable Long keyId) {
-        return apiUsageLogService.getUsageForApiKey(keyId);
+    public ResponseEntity<List<ApiUsageLogDto>> getUsage(@PathVariable Long keyId) {
+        return ResponseEntity.ok(service.getUsageForApiKey(keyId));
     }
 
     @GetMapping("/key/{keyId}/today")
-    public List<ApiUsageLog> getTodayUsage(@PathVariable Long keyId) {
-        return apiUsageLogService.getUsageForToday(keyId);
+    public ResponseEntity<List<ApiUsageLogDto>> getToday(@PathVariable Long keyId) {
+        return ResponseEntity.ok(service.getUsageForToday(keyId));
     }
 
     @GetMapping("/key/{keyId}/count-today")
-    public Long countTodayRequests(@PathVariable Long keyId) {
-        return apiUsageLogService.countRequestsToday(keyId);
+    public ResponseEntity<CountResponseDto> countToday(@PathVariable Long keyId) {
+        return ResponseEntity.ok(new CountResponseDto(service.countRequestsToday(keyId)));
     }
 }

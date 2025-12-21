@@ -1,8 +1,8 @@
-package com.example.controller;
+package com.example.demo.controller;
 
-import com.example.entity.QuotaPlan;
-import com.example.service.QuotaPlanService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.demo.dto.QuotaPlanDto;
+import com.example.demo.service.QuotaPlanService;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,32 +11,37 @@ import java.util.List;
 @RequestMapping("/api/quota-plans")
 public class QuotaPlanController {
 
-    @Autowired
-    private QuotaPlanService quotaPlanService;
+    private final QuotaPlanService service;
+
+    public QuotaPlanController(QuotaPlanService service) {
+        this.service = service;
+    }
 
     @PostMapping
-    public QuotaPlan createPlan(@RequestBody QuotaPlan plan) {
-        return quotaPlanService.createQuotaPlan(plan);
+    public ResponseEntity<QuotaPlanDto> create(@RequestBody QuotaPlanDto dto) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(service.createQuotaPlan(dto));
     }
 
     @PutMapping("/{id}")
-    public QuotaPlan updatePlan(@PathVariable Long id, @RequestBody QuotaPlan plan) {
-        return quotaPlanService.updateQuotaPlan(id, plan);
+    public ResponseEntity<QuotaPlanDto> update(@PathVariable Long id,
+                                               @RequestBody QuotaPlanDto dto) {
+        return ResponseEntity.ok(service.updateQuotaPlan(id, dto));
     }
 
     @GetMapping("/{id}")
-    public QuotaPlan getPlanById(@PathVariable Long id) {
-        return quotaPlanService.getQuotaPlanById(id);
+    public ResponseEntity<QuotaPlanDto> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getQuotaPlanById(id));
     }
 
     @GetMapping
-    public List<QuotaPlan> getAllPlans() {
-        return quotaPlanService.getAllPlans();
+    public ResponseEntity<List<QuotaPlanDto>> getAll() {
+        return ResponseEntity.ok(service.getAllPlans());
     }
 
     @PutMapping("/{id}/deactivate")
-    public String deactivatePlan(@PathVariable Long id) {
-        quotaPlanService.deactivateQuotaPlan(id);
-        return "Quota Plan Deactivated Successfully";
+    public ResponseEntity<Void> deactivate(@PathVariable Long id) {
+        service.deactivateQuotaPlan(id);
+        return ResponseEntity.noContent().build();
     }
 }
