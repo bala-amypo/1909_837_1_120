@@ -24,10 +24,12 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
 
-    public AuthServiceImpl(UserAccountRepository userRepo,
-                           PasswordEncoder passwordEncoder,
-                           AuthenticationManager authenticationManager,
-                           JwtUtil jwtUtil) {
+    public AuthServiceImpl(
+            UserAccountRepository userRepo,
+            PasswordEncoder passwordEncoder,
+            AuthenticationManager authenticationManager,
+            JwtUtil jwtUtil
+    ) {
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
@@ -35,7 +37,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public Object register(RegisterRequestDto request) {
+    public void register(RegisterRequestDto request) {
 
         if (userRepo.existsByEmail(request.getEmail())) {
             throw new BadRequestException("Email already exists");
@@ -47,13 +49,13 @@ public class AuthServiceImpl implements AuthService {
         user.setRole(request.getRole());
 
         userRepo.save(user);
-        return null;
     }
 
     @Override
     public AuthResponseDto login(AuthRequestDto request) {
 
-        Optional<UserAccount> optionalUser = userRepo.findByEmail(request.getEmail());
+        Optional<UserAccount> optionalUser =
+                userRepo.findByEmail(request.getEmail());
 
         if (optionalUser.isEmpty()) {
             throw new ResourceNotFoundException("User not found");
@@ -64,9 +66,10 @@ public class AuthServiceImpl implements AuthService {
         String token = jwtUtil.generateToken(new HashMap<>(), user.getEmail());
 
         AuthResponseDto response = new AuthResponseDto();
+        response.setUserId(user.getId());
         response.setEmail(user.getEmail());
-        response.setToken(token);
         response.setRole(user.getRole());
+        response.setToken(token);
 
         return response;
     }
