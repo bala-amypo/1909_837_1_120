@@ -2,7 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.entity.RateLimitEnforcement;
 import com.example.demo.service.RateLimitEnforcementService;
-import org.springframework.http.*;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,17 +18,17 @@ public class RateLimitEnforcementController {
     }
 
     @PostMapping
-    public ResponseEntity<RateLimitEnforcement> create(@RequestBody RateLimitEnforcement e) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.createEnforcement(e));
+    public RateLimitEnforcement create(@RequestBody RateLimitEnforcement e) {
+        return service.createEnforcement(e);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<RateLimitEnforcement> get(@PathVariable Long id) {
-        return ResponseEntity.ok(service.getEnforcementById(id));
+    public RateLimitEnforcement getById(@PathVariable Long id) {
+        return service.getEnforcementById(id);
     }
 
     @GetMapping("/key/{keyId}")
-    public ResponseEntity<List<RateLimitEnforcement>> key(@PathVariable Long keyId) {
-        return ResponseEntity.ok(service.getEnforcementsForKey(keyId));
+    public List<RateLimitEnforcement> getForKey(@PathVariable Long keyId) {
+        return service.getEnforcementsForKey(keyId);
     }
 }
