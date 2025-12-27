@@ -2,7 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.entity.ApiUsageLog;
 import com.example.demo.service.ApiUsageLogService;
-import org.springframework.http.*;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,22 +18,22 @@ public class ApiUsageLogController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiUsageLog> log(@RequestBody ApiUsageLog log) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.logUsage(log));
+    public ApiUsageLog log(@RequestBody ApiUsageLog log) {
+        return service.logUsage(log);
     }
 
     @GetMapping("/key/{keyId}")
-    public ResponseEntity<List<ApiUsageLog>> getByKey(@PathVariable Long keyId) {
-        return ResponseEntity.ok(service.getUsageForApiKey(keyId));
+    public List<ApiUsageLog> getForKey(@PathVariable Long keyId) {
+        return service.getUsageForApiKey(keyId);
     }
 
     @GetMapping("/key/{keyId}/today")
-    public ResponseEntity<List<ApiUsageLog>> today(@PathVariable Long keyId) {
-        return ResponseEntity.ok(service.getUsageForToday(keyId));
+    public List<ApiUsageLog> getForToday(@PathVariable Long keyId) {
+        return service.getUsageForToday(keyId);
     }
 
     @GetMapping("/key/{keyId}/count-today")
-    public ResponseEntity<Integer> countToday(@PathVariable Long keyId) {
-        return ResponseEntity.ok(service.countRequestsToday(keyId));
+    public int countToday(@PathVariable Long keyId) {
+        return service.countRequestsToday(keyId);
     }
 }

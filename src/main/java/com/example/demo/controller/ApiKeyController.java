@@ -2,7 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.entity.ApiKey;
 import com.example.demo.service.ApiKeyService;
-import org.springframework.http.*;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,35 +11,34 @@ import java.util.List;
 @RequestMapping("/api/api-keys")
 public class ApiKeyController {
 
-    private final ApiKeyService service;
+    private final ApiKeyService apiKeyService;
 
-    public ApiKeyController(ApiKeyService service) {
-        this.service = service;
+    public ApiKeyController(ApiKeyService apiKeyService) {
+        this.apiKeyService = apiKeyService;
     }
 
     @PostMapping
-    public ResponseEntity<ApiKey> create(@RequestBody ApiKey dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.createApiKey(dto));
+    public ApiKey create(@RequestBody ApiKey apiKey) {
+        return apiKeyService.createApiKey(apiKey);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiKey> update(@PathVariable Long id, @RequestBody ApiKey dto) {
-        return ResponseEntity.ok(service.updateApiKey(id, dto));
+    public ApiKey update(@PathVariable Long id, @RequestBody ApiKey apiKey) {
+        return apiKeyService.updateApiKey(id, apiKey);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiKey> get(@PathVariable Long id) {
-        return ResponseEntity.ok(service.getApiKeyById(id));
+    public ApiKey getById(@PathVariable Long id) {
+        return apiKeyService.getApiKeyById(id);
     }
 
     @GetMapping
-    public ResponseEntity<List<ApiKey>> getAll() {
-        return ResponseEntity.ok(service.getAllApiKeys());
+    public List<ApiKey> getAll() {
+        return apiKeyService.getAllApiKeys();
     }
 
     @PutMapping("/{id}/deactivate")
-    public ResponseEntity<Void> deactivate(@PathVariable Long id) {
-        service.deactivateApiKey(id);
-        return ResponseEntity.noContent().build();
+    public void deactivate(@PathVariable Long id) {
+        apiKeyService.deactivateApiKey(id);
     }
 }
