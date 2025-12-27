@@ -1,48 +1,48 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.entity.ApiKey;
-import com.example.demo.entity.KeyExemption;
-import com.example.demo.exception.BadRequestException;
-import com.example.demo.exception.ResourceNotFoundException;
-import com.example.demo.repository.ApiKeyRepository;
-import com.example.demo.repository.KeyExemptionRepository;
+import com.example.demo.entity.*;
+import com.example.demo.exception.*;
+import com.example.demo.repository.*;
 import com.example.demo.service.KeyExemptionService;
+import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
 
+@Service
 public class KeyExemptionServiceImpl implements KeyExemptionService {
 
     private final KeyExemptionRepository repo;
-    private final ApiKeyRepository keyRepo;
+    private final ApiKeyRepository apiKeyRepo;
 
-    public KeyExemptionServiceImpl(KeyExemptionRepository repo, ApiKeyRepository keyRepo) {
+    public KeyExemptionServiceImpl(KeyExemptionRepository repo,
+                                   ApiKeyRepository apiKeyRepo) {
         this.repo = repo;
-        this.keyRepo = keyRepo;
+        this.apiKeyRepo = apiKeyRepo;
     }
 
     @Override
     public KeyExemption createExemption(KeyExemption e) {
-        ApiKey key = keyRepo.findById(e.getApiKey().getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Key not found"));
 
-        if (e.getTemporaryExtensionLimit() != null && e.getTemporaryExtensionLimit() < 0)
-            throw new BadRequestException("Invalid extension");
+        apiKeyRepo.findById(e.getApiKey().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Key missing"));
+
+        if(e.getValidUntil().isBefore(Instant.now()))
+            throw new BadRequestException("Expired");
 
         return repo.save(e);
     }
 
     @Override
     public KeyExemption updateExemption(Long id, KeyExemption e) {
-        KeyExemption ex = repo.findById(id)
+        KeyExemption x = repo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Not found"));
 
-        ex.setNotes(e.getNotes());
-        ex.setTemporaryExtensionLimit(e.getTemporaryExtensionLimit());
-        ex.setUnlimitedAccess(e.getUnlimitedAccess());
-        ex.setValidUntil(e.getValidUntil());
-
-        return repo.save(ex);
+        x.setNotes(e.getNotes());
+        x.setUnlimitedAccess(e.getUnlimitedAccess());
+        x.setTemporaryExtensionLimit(e.getTemporaryExtensionLimit());
+        x.setValidUntil(e.getValidUntil());
+        return repo.save(x);
     }
 
     @Override

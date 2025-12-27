@@ -1,18 +1,12 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.entity.ApiKey;
-import com.example.demo.entity.ApiUsageLog;
-import com.example.demo.exception.BadRequestException;
-import com.example.demo.exception.ResourceNotFoundException;
-import com.example.demo.repository.ApiKeyRepository;
-import com.example.demo.repository.ApiUsageLogRepository;
+import com.example.demo.entity.*;
+import com.example.demo.exception.*;
+import com.example.demo.repository.*;
 import com.example.demo.service.ApiUsageLogService;
-
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.util.List;
 
 @Service
@@ -29,13 +23,11 @@ public class ApiUsageLogServiceImpl implements ApiUsageLogService {
 
     @Override
     public ApiUsageLog logUsage(ApiUsageLog log) {
+        apiKeyRepo.findById(log.getApiKey().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Key missing"));
 
-        ApiKey key = apiKeyRepo.findById(log.getApiKey().getId())
-                .orElseThrow(() -> new ResourceNotFoundException("API Key not found"));
-
-        if (log.getTimestamp().isAfter(Instant.now())) {
-            throw new BadRequestException("Timestamp cannot be in the future");
-        }
+        if(log.getTimestamp().isAfter(Instant.now()))
+            throw new BadRequestException("Future timestamp");
 
         return usageRepo.save(log);
     }
@@ -49,13 +41,13 @@ public class ApiUsageLogServiceImpl implements ApiUsageLogService {
     public List<ApiUsageLog> getUsageForToday(Long keyId) {
         Instant start = LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC);
         Instant end = Instant.now();
-        return usageRepo.findForKeyBetween(keyId, start, end);
+        return usageRepo.findForKeyBetween(keyId,start,end);
     }
 
     @Override
     public int countRequestsToday(Long keyId) {
         Instant start = LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC);
         Instant end = Instant.now();
-        return usageRepo.countForKeyBetween(keyId, start, end).intValue();
+        return usageRepo.countForKeyBetween(keyId,start,end).intValue();
     }
 }
