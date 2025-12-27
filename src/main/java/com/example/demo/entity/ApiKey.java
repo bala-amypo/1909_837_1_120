@@ -1,54 +1,61 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-import java.time.Instant;
 
 @Entity
-@Table(name = "api_key", uniqueConstraints = @UniqueConstraint(columnNames = "key_value"))
+@Table(name = "api_keys")
 public class ApiKey {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "key_value", nullable = false, unique = true)
     private String keyValue;
-
-    @Column(nullable = false)
     private Long ownerId;
+    private boolean active = true;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "plan_id", nullable = false)
+    @ManyToOne
     private QuotaPlan plan;
 
-    @Column(nullable = false)
-    private Boolean active = true;
+    public ApiKey() {}
 
-    @Column(nullable = false, updatable = false)
-    private Instant createdAt = Instant.now();
+    public Long getId() {
+        return id;
+    }
 
-    @Column(nullable = false)
-    private Instant updatedAt = Instant.now();
+    public void setId(Long id) {      
+        this.id = id;
+    }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public String getKeyValue() {
+        return keyValue;
+    }
 
-    public String getKeyValue() { return keyValue; }
-    public void setKeyValue(String keyValue) { this.keyValue = keyValue; }
+    public void setKeyValue(String keyValue) {
+        this.keyValue = keyValue;
+    }
 
-    public Long getOwnerId() { return ownerId; }
-    public void setOwnerId(Long ownerId) { this.ownerId = ownerId; }
+    public Long getOwnerId() {
+        return ownerId;
+    }
 
-    public QuotaPlan getPlan() { return plan; }
-    public void setPlan(QuotaPlan plan) { this.plan = plan; }
+    public void setOwnerId(Long ownerId) {
+        this.ownerId = ownerId;
+    }
 
-    public Boolean isActive() { return active; }
-    public Boolean getActive() { return active; }
-    public void setActive(Boolean active) { this.active = active; }
+    public boolean isActive() {
+        return active;
+    }
 
-    public Instant getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+    public void setActive(boolean active) {
+        this.active = active;
+    }
 
-    public Instant getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
+    public QuotaPlan getPlan() {
+        return plan;
+    }
+
+    public void setPlan(QuotaPlan plan) {
+        this.plan = plan;
+    }
 }
