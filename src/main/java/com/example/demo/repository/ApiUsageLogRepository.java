@@ -12,13 +12,17 @@ public interface ApiUsageLogRepository extends JpaRepository<ApiUsageLog, Long> 
 
     List<ApiUsageLog> findByApiKey_Id(Long id);
 
-    @Query("SELECT l FROM ApiUsageLog l WHERE l.apiKey.id = :keyId AND l.timestamp BETWEEN :start AND :end")
-    List<ApiUsageLog> findForKeyBetween(@Param("keyId") Long keyId,
-                                        @Param("start") Instant start,
-                                        @Param("end") Instant end);
+    @Query("SELECT u FROM ApiUsageLog u WHERE u.apiKey.id = :keyId AND u.timestamp BETWEEN :start AND :end")
+    List<ApiUsageLog> findForKeyBetween(
+            @Param("keyId") Long keyId,
+            @Param("start") Instant start,
+            @Param("end") Instant end
+    );
 
-    @Query("SELECT COUNT(l) FROM ApiUsageLog l WHERE l.apiKey.id = :keyId AND l.timestamp BETWEEN :start AND :end")
-    Integer countForKeyBetween(@Param("keyId") Long keyId,
-                               @Param("start") Instant start,
-                               @Param("end") Instant end);
+    @Query("SELECT COUNT(u) FROM ApiUsageLog u WHERE u.apiKey.id = :keyId AND u.timestamp BETWEEN :start AND :end")
+    int countForKeyBetween(
+            @Param("keyId") Long keyId,
+            @Param("start") Instant start,
+            @Param("end") Instant end
+    );
 }
