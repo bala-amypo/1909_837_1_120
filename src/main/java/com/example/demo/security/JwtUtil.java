@@ -1,39 +1,32 @@
 package com.example.demo.security;
 
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
 import java.util.Date;
 import java.util.Map;
 
 @Component
 public class JwtUtil {
 
-    private static final long EXP = 86400000L;
+    private static final String SECRET = "my-secret-key-123456";
+    private static final long EXPIRATION = 1000 * 60 * 60; 
 
-    private static final String SECRET =
-            "9a4f2c8d3b7a1e6f45c8a0b3f267d8b1d4e6f3c8a9d2b5f8e3a9c8b5f6d7a4b2";
-
-    private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(SECRET.getBytes());
-    }
-
-    public String generateToken(Map<String, Object> claims, String subject) {
+    public String generateToken(Map<String, Object> claims, String username) {
         return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(subject)
+                .setSubject(username)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXP))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
+                .signWith(SignatureAlgorithm.HS256, SECRET)
                 .compact();
     }
 
     public Claims getClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
+        return Jwts.parser()
+                .setSigningKey(SECRET)
                 .parseClaimsJws(token)
                 .getBody();
     }
@@ -42,11 +35,16 @@ public class JwtUtil {
         return getClaims(token).getSubject();
     }
 
+    public String extractUsername(String token) {
+        return getUsername(token);
+    }
+
     public boolean isTokenValid(String token, String username) {
-        return username.equals(getUsername(token));
+        return username.equals(getUsername(token)) &&
+                !getClaims(token).getExpiration().before(new Date());
     }
 
     public long getExpirationMillis() {
-        return EXP;
+        return EXPIRATION;
     }
 }
