@@ -1,39 +1,56 @@
 package com.example.demo.service.impl;
 
+import com.example.demo.entity.ApiKey;
 import com.example.demo.entity.ApiUsageLog;
+import com.example.demo.exception.BadRequestException;
+import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.repository.ApiKeyRepository;
 import com.example.demo.repository.ApiUsageLogRepository;
 import com.example.demo.service.ApiUsageLogService;
-import org.springframework.stereotype.Service;
-import java.time.LocalDateTime;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 
-@Service
 public class ApiUsageLogServiceImpl implements ApiUsageLogService {
-    private final ApiUsageLogRepository usageLogRepository;
 
-    public ApiUsageLogServiceImpl(ApiUsageLogRepository usageLogRepository) {
-        this.usageLogRepository = usageLogRepository;
+    private final ApiUsageLogRepository repo;
+    private final ApiKeyRepository keyRepo;
+
+    public ApiUsageLogServiceImpl(ApiUsageLogRepository repo, ApiKeyRepository keyRepo) {
+        this.repo = repo;
+        this.keyRepo = keyRepo;
     }
 
     @Override
     public ApiUsageLog logUsage(ApiUsageLog log) {
-        log.setTimestamp(LocalDateTime.now());
-        return usageLogRepository.save(log);
+
+        ApiKey key = keyRepo.findById(log.getApiKey().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Key not found"));
+
+        if (log.getTimestamp().isAfter(Instant.now()))
+            throw new BadRequestException("Future timestamp");
+
+        return repo.save(log);
     }
 
     @Override
     public List<ApiUsageLog> getUsageForApiKey(Long keyId) {
-        return usageLogRepository.findByApiKey_Id(keyId);
+        return repo.findByApiKey_Id(keyId);
     }
 
     @Override
     public List<ApiUsageLog> getUsageForToday(Long keyId) {
-        LocalDateTime startOfDay = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0);
-        return usageLogRepository.findByApiKey_IdAndTimestampAfter(keyId, startOfDay);
+        Instant start = LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC);
+        Instant now = Instant.now();
+        return repo.findForKeyBetween(keyId, start, now);
     }
 
     @Override
     public int countRequestsToday(Long keyId) {
-        return getUsageForToday(keyId).size();
+        Instant start = LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC);
+        Instant now = Instant.now();
+        return repo.countForKeyBetween(keyId, start, now);
     }
 }
