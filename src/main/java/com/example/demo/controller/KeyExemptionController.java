@@ -2,32 +2,38 @@ package com.example.demo.controller;
 
 import com.example.demo.entity.KeyExemption;
 import com.example.demo.service.KeyExemptionService;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/key-exemptions")
-@Tag(name = "Key Exemptions")
 public class KeyExemptionController {
-    private final KeyExemptionService exemptionService;
 
-    public KeyExemptionController(KeyExemptionService exemptionService) {
-        this.exemptionService = exemptionService;
+    private final KeyExemptionService service;
+
+    public KeyExemptionController(KeyExemptionService service) {
+        this.service = service;
     }
 
     @PostMapping
-    public KeyExemption createExemption(@RequestBody KeyExemption exemption) {
-        return exemptionService.createExemption(exemption);
+    public ResponseEntity<KeyExemption> create(@RequestBody KeyExemption e) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.createExemption(e));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<KeyExemption> update(@PathVariable Long id, @RequestBody KeyExemption e) {
+        return ResponseEntity.ok(service.updateExemption(id, e));
     }
 
     @GetMapping("/key/{keyId}")
-    public KeyExemption getByApiKey(@PathVariable Long keyId) {
-        return exemptionService.getExemptionByKey(keyId).orElse(null);
+    public ResponseEntity<KeyExemption> get(@PathVariable Long keyId) {
+        return ResponseEntity.ok(service.getExemptionByKey(keyId));
     }
 
     @GetMapping
-    public List<KeyExemption> getAll() {
-        return exemptionService.getAllExemptions();
+    public ResponseEntity<List<KeyExemption>> all() {
+        return ResponseEntity.ok(service.getAllExemptions());
     }
 }

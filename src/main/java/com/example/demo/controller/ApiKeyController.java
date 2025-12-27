@@ -2,42 +2,44 @@ package com.example.demo.controller;
 
 import com.example.demo.entity.ApiKey;
 import com.example.demo.service.ApiKeyService;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/api-keys")
-@Tag(name = "API Key Management")
 public class ApiKeyController {
-    private final ApiKeyService apiKeyService;
 
-    public ApiKeyController(ApiKeyService apiKeyService) {
-        this.apiKeyService = apiKeyService;
+    private final ApiKeyService service;
+
+    public ApiKeyController(ApiKeyService service) {
+        this.service = service;
     }
 
     @PostMapping
-    public ApiKey createApiKey(@RequestBody ApiKey apiKey) {
-        return apiKeyService.createApiKey(apiKey);
+    public ResponseEntity<ApiKey> create(@RequestBody ApiKey dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.createApiKey(dto));
     }
 
     @PutMapping("/{id}")
-    public ApiKey updateApiKey(@PathVariable Long id, @RequestBody ApiKey apiKey) {
-        return apiKeyService.updateApiKey(id, apiKey);
+    public ResponseEntity<ApiKey> update(@PathVariable Long id, @RequestBody ApiKey dto) {
+        return ResponseEntity.ok(service.updateApiKey(id, dto));
     }
 
     @GetMapping("/{id}")
-    public ApiKey getApiKeyById(@PathVariable Long id) {
-        return apiKeyService.getApiKeyById(id);
+    public ResponseEntity<ApiKey> get(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getApiKeyById(id));
     }
 
     @GetMapping
-    public List<ApiKey> getAllApiKeys() {
-        return apiKeyService.getAllApiKeys();
+    public ResponseEntity<List<ApiKey>> getAll() {
+        return ResponseEntity.ok(service.getAllApiKeys());
     }
 
     @PutMapping("/{id}/deactivate")
-    public void deactivateApiKey(@PathVariable Long id) {
-        apiKeyService.deactivateApiKey(id);
+    public ResponseEntity<Void> deactivate(@PathVariable Long id) {
+        service.deactivateApiKey(id);
+        return ResponseEntity.noContent().build();
     }
 }

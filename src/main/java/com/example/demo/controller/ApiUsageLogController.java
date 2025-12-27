@@ -2,37 +2,38 @@ package com.example.demo.controller;
 
 import com.example.demo.entity.ApiUsageLog;
 import com.example.demo.service.ApiUsageLogService;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/usage-logs")
-@Tag(name = "Usage Logging")
 public class ApiUsageLogController {
-    private final ApiUsageLogService apiUsageLogService;
 
-    public ApiUsageLogController(ApiUsageLogService apiUsageLogService) {
-        this.apiUsageLogService = apiUsageLogService;
+    private final ApiUsageLogService service;
+
+    public ApiUsageLogController(ApiUsageLogService service) {
+        this.service = service;
     }
 
     @PostMapping
-    public ApiUsageLog logUsage(@RequestBody ApiUsageLog log) {
-        return apiUsageLogService.logUsage(log);
+    public ResponseEntity<ApiUsageLog> log(@RequestBody ApiUsageLog log) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.logUsage(log));
     }
 
     @GetMapping("/key/{keyId}")
-    public List<ApiUsageLog> getUsageForApiKey(@PathVariable Long keyId) {
-        return apiUsageLogService.getUsageForApiKey(keyId);
+    public ResponseEntity<List<ApiUsageLog>> getByKey(@PathVariable Long keyId) {
+        return ResponseEntity.ok(service.getUsageForApiKey(keyId));
     }
 
     @GetMapping("/key/{keyId}/today")
-    public List<ApiUsageLog> getUsageForToday(@PathVariable Long keyId) {
-        return apiUsageLogService.getUsageForToday(keyId);
+    public ResponseEntity<List<ApiUsageLog>> today(@PathVariable Long keyId) {
+        return ResponseEntity.ok(service.getUsageForToday(keyId));
     }
 
     @GetMapping("/key/{keyId}/count-today")
-    public int countRequestsToday(@PathVariable Long keyId) {
-        return apiUsageLogService.countRequestsToday(keyId);
+    public ResponseEntity<Integer> countToday(@PathVariable Long keyId) {
+        return ResponseEntity.ok(service.countRequestsToday(keyId));
     }
 }
